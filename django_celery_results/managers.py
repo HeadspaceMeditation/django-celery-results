@@ -110,7 +110,6 @@ class TaskResultManager(models.Manager):
         """
         fields = {
             'status': status,
-            'result': result,
             'traceback': traceback,
             'meta': meta,
             'content_encoding': content_encoding,
@@ -120,7 +119,8 @@ class TaskResultManager(models.Manager):
         if not created:
             for k, v in items(fields):
                 setattr(obj, k, v)
-            obj.save()
+        obj.inflated = result
+        obj.save()
         return obj
 
     def warn_if_repeatable_read(self):
