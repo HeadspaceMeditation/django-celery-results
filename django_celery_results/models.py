@@ -11,6 +11,8 @@ from . import managers
 
 import io
 import gzip
+import logging
+from .utils import disable_logging
 
 ALL_STATES = sorted(states.ALL_STATES)
 TASK_STATE_CHOICES = sorted(zip(ALL_STATES, ALL_STATES))
@@ -95,6 +97,20 @@ class TaskResult(models.Model):
         with gzip.GzipFile(fileobj=out, mode='w') as fo:
             fo.write(uncompressed.encode('utf-8'))
         self.result = out.getvalue()
+
+    def save(self, *args, **kwargs):
+        """
+        MySQL django backend issues warnings when BinaryField is sent
+        non text encoded bytes.
+
+        This suppresses these superflous warnings.
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        with disable_logging(logging.WARNING):
+            super(TaskResult, self).save(*args, **kwargs)
+
 
     def __str__(self):
         return '<Task: {0.task_id} ({0.status})>'.format(self)
