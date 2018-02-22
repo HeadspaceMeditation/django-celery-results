@@ -11,7 +11,7 @@ class TaskResultAdmin(admin.ModelAdmin):
 
     model = TaskResult
     list_display = ('task_id', 'date_done', 'status')
-    readonly_fields = ('date_done', 'result', 'hidden', 'meta')
+    readonly_fields = ('date_done', 'hidden', 'meta')
     fieldsets = (
         (None, {
             'fields': (
@@ -24,7 +24,6 @@ class TaskResultAdmin(admin.ModelAdmin):
         }),
         ('Result', {
             'fields': (
-                'result',
                 'date_done',
                 'traceback',
                 'hidden',
