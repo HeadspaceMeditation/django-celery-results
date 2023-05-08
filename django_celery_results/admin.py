@@ -67,8 +67,6 @@ class TaskResultAdmin(admin.ModelAdmin):
             })
 
 
-
-
 @admin.register(GroupResult)
 class GroupResultAdmin(admin.ModelAdmin):
     """Admin-interface for results  of grouped tasks."""
@@ -79,5 +77,3 @@ class GroupResultAdmin(admin.ModelAdmin):
     list_filter = ('date_done',)
     readonly_fields = ('date_created', 'date_done', 'result')
     search_fields = ('group_id',)
-
-
