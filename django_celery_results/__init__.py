@@ -32,5 +32,3 @@ del re
 
 __all__ = []
 
-if django.VERSION < (3, 2):
-    default_app_config = 'django_celery_results.apps.CeleryResultConfig'

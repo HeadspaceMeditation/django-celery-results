@@ -13,6 +13,7 @@ except (AttributeError, KeyError):
 from .models import GroupResult, TaskResult
 
 
+@admin.register(TaskResult)
 class TaskResultAdmin(admin.ModelAdmin):
     """Admin-interface for results of tasks."""
 
@@ -66,9 +67,9 @@ class TaskResultAdmin(admin.ModelAdmin):
             })
 
 
-admin.site.register(TaskResult, TaskResultAdmin)
 
 
+@admin.register(GroupResult)
 class GroupResultAdmin(admin.ModelAdmin):
     """Admin-interface for results  of grouped tasks."""
 
@@ -80,4 +81,3 @@ class GroupResultAdmin(admin.ModelAdmin):
     search_fields = ('group_id',)
 
 
-admin.site.register(GroupResult, GroupResultAdmin)
