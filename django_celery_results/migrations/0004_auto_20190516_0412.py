@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='taskresult',
             name='result',
-            field=models.TextField(default=None, editable=False, help_text='The data returned by the task.  Use content_encoding and content_type fields to read.', null=True, verbose_name='Result Data'),
+            field=models.BinaryField(default=None, editable=False, help_text='The data returned by the task.  Use content_encoding and content_type fields to read.', null=True, verbose_name='Result Data'),
         ),
         migrations.AlterField(
             model_name='taskresult',
