@@ -150,7 +150,6 @@ class TaskResultManager(ResultManager):
         """
         fields = {
             'status': status,
-            'result': result,
             'traceback': traceback,
             'meta': meta,
             'content_encoding': content_encoding,
@@ -166,7 +165,8 @@ class TaskResultManager(ResultManager):
         if not created:
             for k, v in fields.items():
                 setattr(obj, k, v)
-            obj.save(using=using)
+        obj.inflated = result
+        obj.save(using=using)
         return obj
 
 
