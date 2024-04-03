@@ -2,6 +2,9 @@
 from __future__ import absolute_import, unicode_literals
 
 import json
+import io
+import gzip
+import logging
 
 from django.conf import settings
 from django.db import models
@@ -10,6 +13,7 @@ from django.utils.translation import gettext_lazy as _
 from celery import states
 from celery.result import GroupResult, result_from_tuple
 
+from .utils import disable_logging
 from . import managers
 
 ALL_STATES = sorted(states.ALL_STATES)
@@ -59,7 +63,9 @@ class TaskResult(models.Model):
         max_length=64,
         verbose_name=_('Result Encoding'),
         help_text=_('The encoding used to save the task result data'))
-    result = models.TextField(
+    # Warning: access the result via the `inflated` getter/setter which handles gzipping/unzipping,
+    #          do not access result data directly.
+    result = models.BinaryField(
         null=True, default=None, editable=False,
         verbose_name=_('Result Data'),
         help_text=_('The data returned by the task.  '
@@ -99,12 +105,58 @@ class TaskResult(models.Model):
             'task_args': self.task_args,
             'task_kwargs': self.task_kwargs,
             'status': self.status,
-            'result': self.result,
+            'result': self.inflated,
             'date_done': self.date_done,
             'traceback': self.traceback,
             'meta': self.meta,
             'worker': self.worker
         }
+
+    @property
+    def inflated(self):
+        """
+        Unzipped result.
+        :return:
+        """
+        if self.result is None:
+            return None
+
+        in_ = io.BytesIO()
+        in_.write(self.result)
+        in_.seek(0)
+        with gzip.GzipFile(fileobj=in_, mode='rb') as fo:
+            gunzipped_bytes_obj = fo.read()
+
+        return gunzipped_bytes_obj.decode('utf-8')
+
+    @inflated.setter
+    def inflated(self, uncompressed):
+        """
+        Gzips the provided uncompressed value into the result field.
+        :param uncompressed: serialized input data
+        :return:
+        """
+        if uncompressed is None:
+            self.result = None
+            return
+
+        # Gzip it for storage.
+        out = io.BytesIO()
+        with gzip.GzipFile(fileobj=out, mode='w') as fo:
+            fo.write(uncompressed.encode('utf-8'))
+        self.result = out.getvalue()
+
+    def save(self, *args, **kwargs):
+        """
+        MySQL django backend issues warnings when BinaryField is sent
+        non text encoded bytes.
+        This suppresses these superfluous warnings.
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        with disable_logging(logging.WARNING):
+            super(TaskResult, self).save(*args, **kwargs)
 
     def __str__(self):
         return '<Task: {0.task_id} ({0.status})>'.format(self)
@@ -150,3 +202,4 @@ class ChordCounter(models.Model):
              for r in json.loads(self.sub_tasks)],
             app=app,
         )
+

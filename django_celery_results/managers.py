@@ -119,7 +119,6 @@ class TaskResultManager(models.Manager):
         """
         fields = {
             'status': status,
-            'result': result,
             'traceback': traceback,
             'meta': meta,
             'content_encoding': content_encoding,
@@ -134,7 +133,8 @@ class TaskResultManager(models.Manager):
         if not created:
             for k, v in fields.items():
                 setattr(obj, k, v)
-            obj.save(using=using)
+        obj.inflated = result
+        obj.save(using=using)
         return obj
 
     def warn_if_repeatable_read(self):
@@ -169,3 +169,4 @@ class TaskResultManager(models.Manager):
         """Delete all expired results."""
         with transaction.atomic():
             self.get_all_expired(expires).delete()
+

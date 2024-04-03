@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
                     max_length=128, verbose_name='content type')),
                 ('content_encoding', models.CharField(
                     max_length=64, verbose_name='content encoding')),
-                ('result', models.TextField(default=None, editable=False,
+                ('result', models.BinaryField(default=None, editable=False,
                                             null=True)),
                 ('date_done', models.DateTimeField(
                     auto_now=True, verbose_name='done at')),
